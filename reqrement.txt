@@ -1,0 +1,32 @@
+
+Tables:
+User
+Admin
+Trsaction
+Books
+
+Features:
+User:
+issue a book:
+	User qrscanning
+	Book qrscanning
+Return a boook:
+	User qrscanning
+	Book qrscanning
+User Information:
+	User qrscanning
+
+
+Admin
+	Login(Only he can login)
+	register new user
+	updating user
+	deleting user
+	regeting book
+	updating book
+	seeing trasaction table
+	editing trsaction for dates
+	
+
+
+

@@ -1,6 +1,6 @@
 from . import db
 from . import bcrypt
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String,Boolean
 
 
 class AdminUser(db.Model):
@@ -13,14 +13,34 @@ class AdminUser(db.Model):
 
     def check_password(self, data):
         return bcrypt.check_password_hash(self.password, data)
+    
+    def __repr__(self) -> str:
+        return f"<AdminUser {self.username}>" 
 
-# class User(db.Model):
-#     pass
 
-# class Books(db.Model):
-#     pass
+class User(db.Model):
+    id = db.Column(Integer, primary_key=True)
+    first_name = db.Column(String(32), nullable=False)
+    last_name= db.Column(String(32), nullable=False)
+    qr=db.Column(String(256),unique=True, nullable=False)
+    active=db.Column(Boolean,nullable=False,default=True)
 
-# class Transaction(db.Model):
-#     pass
+    
+class Books(db.Model):
+    id = db.Column(Integer, primary_key=True)
+    title = db.Column(String(256), nullable=False)
+    author = db.Column(String(256), nullable=False)
+    qr=db.Column(String(256),unique=True, nullable=False)
+    issue=db.Column(Boolean,nullable=False,default=False)
+
+
+class Transaction(db.Model):
+    id = db.Column(Integer, primary_key=True)
+    user_id = db.Column(Integer, db.ForeignKey('user.id'), nullable=False)
+    book_id = db.Column(Integer, db.ForeignKey('books.id'), nullable=False)
+    issue_date = db.Column(db.DateTime, nullable=False)
+    due_date=db.Column(db.DateTime,nullable=False)
+    return_date = db.Column(db.DateTime)
+    returned=db.Column(Boolean,nullable=False,default=False)
 
 

@@ -11,7 +11,9 @@ def index():
 def user_qrscan():
     form=UserQrScan()
     if form.validate_on_submit():
-        user=User.query.filter_by(qr=form.data.get('qr')).first()
+        user = User.query.filter_by(
+            qr=form.data.get('qr')
+        ).first()
         if user is None:
             return "Invalid QR"
         
@@ -23,10 +25,35 @@ def user_qrscan():
 def book_qrscan():
     form=BookQrScan()
 
-    if request.args.get('userid') is None:
+    user_id = request.args.get('userid')
+    if user_id is None:
         return "No User ID Present"
     
     if form.validate_on_submit():
-        return form.data.get("qr")
+        book_qr = form.data.get("qr")
+
+        user = User.query.filter_by(
+            id = user_id
+        ).first()
+
+        book = Books.query.filter_by(
+            qr = book_qr
+        ).first()
+
+        if user is None or book is None:
+            return "Error"
+        
+        if book.issue:
+            return "Book Already Issued"
+        
+        trans = Transaction()
+        trans.user_id = user.id
+        trans.book_id = book.id
+        book.issue=True
+
+        db.session.add(trans)
+        db.session.commit()
+
+        return "Issued"
     
-    return render_template('book_qr.html',form=form)
+    return render_template('book_qr.html',form=form,userid=user_id)

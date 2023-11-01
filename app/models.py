@@ -1,5 +1,8 @@
+from datetime import date, timedelta
+
 from . import db
 from . import bcrypt
+from .helper import *
 from sqlalchemy import Integer, String,Boolean
 
 
@@ -38,8 +41,8 @@ class Transaction(db.Model):
     id = db.Column(Integer, primary_key=True)
     user_id = db.Column(Integer, db.ForeignKey('user.id'), nullable=False)
     book_id = db.Column(Integer, db.ForeignKey('books.id'), nullable=False)
-    issue_date = db.Column(db.DateTime, nullable=False)
-    due_date=db.Column(db.DateTime,nullable=False)
+    issue_date = db.Column(db.DateTime, nullable=False, default=date.today)
+    due_date=db.Column(db.DateTime,nullable=False, default=due_date_calculator)
     return_date = db.Column(db.DateTime)
     returned=db.Column(Boolean,nullable=False,default=False)
 

@@ -5,9 +5,9 @@
 {% endblock %}
 
 {% block content %}
-<h2>user_qr_scan</h2>
+<h2>Book_qr_scan</h2>
 <div id="reader"></div>
-<form name="qrform" method="POST" action="{{ url_for('user_qrscan') }}">
+<form name="qrform" method="POST" action="{{ url_for('book_qrscan_return',userid=userid) }}">
     {{ form.hidden_tag() }}
 </form>
 

@@ -8,7 +8,7 @@
 {% block content %}
 <h2>user_qr_scan</h2>
 <div id="reader"></div>
-<form name="qrform" method="POST" action="{{ url_for('user_qrscan_borrow') }}">
+<form name="qrform" method="POST" action="{{ url_for('user_qrscan_info') }}">
     {{ form.hidden_tag() }}
 </form>
 

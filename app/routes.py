@@ -1,12 +1,41 @@
-from flask import render_template,redirect,url_for,request
+from flask import render_template,redirect,url_for,request,abort
 from . import app
 from .form import * 
 from .models import *
 from datetime import date, timedelta
+from flask_login import login_user,logout_user,login_required,current_user
 
-@app.route('/')
-def index():
-    return render_template("index.html")
+
+
+@app.route('/',methods=["POST","GET"])
+def login():
+    form = Login()
+    if form.validate_on_submit():
+        username = form.data.get('username')
+        password = form.data.get('password')
+        admin_user = AdminUser.query.filter_by(username=username).first()
+
+        if admin_user and admin_user.check_password(password):
+            login_user(admin_user)
+            return redirect('/admin')
+        else:
+            return "Invalid username or password"
+
+    return render_template('index.html', form=form)
+
+
+@app.route('/logout',methods=['POST','GET'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/landing_page',methods=["POST","GET"])
+@login_required
+def landing_page():
+    return render_template("admin_home_page.html")
+
+
 
 @app.route('/user_qrscan_borrow', methods=["POST","GET"])
 def user_qrscan_borrow():
@@ -114,4 +143,38 @@ def book_qrscan_return():
             return "No Transaction Found"
     
     return render_template('book_qr_return.html',form=form,userid=user_id)
+
+# <-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
+
+
+
+@app.route('/user_qrscan_info', methods=["POST","GET"])
+def user_qrscan_info():
+    form=UserQrScan()
+    if form.validate_on_submit():
+        user = User.query.filter_by(
+            qr=form.data.get('qr')
+        ).first()
+        if user is None:
+            return "Invalid QR"
+
+        return redirect(url_for("user_info_table",userid=user.id))    
+    return render_template('user_qr_info.html',form=form)
+
+@app.route('/user_info_table', methods=["POST","GET"])
+def user_info_table():
+    user_id = request.args.get('userid')
+    if user_id is None:
+        return "Error"
+    user = User.query.get(user_id)
+    book_id=Transaction.query.filter_by(user_id=user_id).first().book_id
+    book=Books.query.filter_by(id=book_id).first().title
+    transactions = Transaction.query.filter_by(user_id=user_id).join(Books).all()
+    # books_returned = Transaction.query.filter_by(user_id=user_id).count()
+    # books_not_returned = Transaction.query.filter_by(user_id=user_id, return_date=None).count()
+    return render_template('user_table_view_info.html', user=user, transactions=transactions,book=book)
+    
+
+
+
 

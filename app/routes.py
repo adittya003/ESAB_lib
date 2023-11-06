@@ -167,12 +167,20 @@ def user_info_table():
     if user_id is None:
         return "Error"
     user = User.query.get(user_id)
-    book_id=Transaction.query.filter_by(user_id=user_id).first().book_id
-    book=Books.query.filter_by(id=book_id).first().title
-    transactions = Transaction.query.filter_by(user_id=user_id).join(Books).all()
-    # books_returned = Transaction.query.filter_by(user_id=user_id).count()
-    # books_not_returned = Transaction.query.filter_by(user_id=user_id, return_date=None).count()
-    return render_template('user_table_view_info.html', user=user, transactions=transactions,book=book)
+    transactions = Transaction.query.filter_by(user_id=user_id).all()
+
+    # Extract all book IDs taken by the user
+    book_ids_taken = [transaction.book_id for transaction in transactions]
+
+    # Retrieve the titles of books associated with the book IDs
+    books_taken = Books.query.filter(Books.id.in_(book_ids_taken)).all()
+
+    # Create a dictionary to map book IDs to book titles
+    book_id_to_title = {book.id: book.title for book in books_taken}
+
+    books_returned = Transaction.query.filter_by(user_id=user_id).count()
+    books_not_returned = Transaction.query.filter_by(user_id=user_id, return_date=None).count()
+    return render_template('user_table_view_info.html', user=user, transactions=transactions,book_id_to_title=book_id_to_title,books_returned=books_returned,books_not_returned=books_not_returned)
     
 
 

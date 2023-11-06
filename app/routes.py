@@ -30,10 +30,6 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-@app.route('/landing_page',methods=["POST","GET"])
-@login_required
-def landing_page():
-    return render_template("admin_home_page.html")
 
 
 
@@ -169,13 +165,13 @@ def user_info_table():
     user = User.query.get(user_id)
     transactions = Transaction.query.filter_by(user_id=user_id).all()
 
-    # Extract all book IDs taken by the user
+    
     book_ids_taken = [transaction.book_id for transaction in transactions]
 
-    # Retrieve the titles of books associated with the book IDs
+    
     books_taken = Books.query.filter(Books.id.in_(book_ids_taken)).all()
 
-    # Create a dictionary to map book IDs to book titles
+    
     book_id_to_title = {book.id: book.title for book in books_taken}
 
     books_returned = Transaction.query.filter_by(user_id=user_id).count()

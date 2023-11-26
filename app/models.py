@@ -49,13 +49,13 @@ class Transaction(db.Model):
     return_date = db.Column(db.DateTime)
     returned=db.Column(Boolean,nullable=False,default=False)
 
-class Late(db.Model):
-    id = db.Column(Integer, primary_key=True)
-    first_name = db.Column(String(32), nullable=False)
-    last_name= db.Column(String(32), nullable=False)
-    phone_number=db.Column(String(10),unique=True, nullable=False)
-    title = db.Column(String(256), nullable=False)
-    return_date = db.Column(db.DateTime)
+# class Late(db.Model):
+#     id = db.Column(Integer, primary_key=True)
+#     first_name = db.Column(String(32), nullable=False)
+#     last_name= db.Column(String(32), nullable=False)
+#     phone_number=db.Column(String(10),unique=True, nullable=False)
+#     title = db.Column(String(256), nullable=False)
+#     return_date = db.Column(db.DateTime)
 
 
 @login_manager.user_loader

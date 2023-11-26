@@ -50,10 +50,13 @@ def user_qrscan_borrow():
 @app.route('/book_qrscan_borrow', methods=["POST","GET"])
 def book_qrscan_borrow():
     form=BookQrScan()
-
+    message=''
     user_id = request.args.get('userid')
+    transaction_id = None
     if user_id is None:
-        return "No User ID Present"
+        message= 'No User ID Present'
+        transaction_id=None
+        return redirect(url_for('borrow_landing',message=message,transaction_id=transaction_id))
     
     if form.validate_on_submit():
         book_qr = form.data.get("qr")
@@ -67,10 +70,14 @@ def book_qrscan_borrow():
         ).first()
 
         if user is None or book is None:
-            return "Error"
+            message= 'Error'
+            transaction_id=None
+            return redirect(url_for('borrow_landing',message=message,transaction_id=transaction_id))
         
         if book.issue:
-            return "Book Already Issued"
+            message = 'Book Already Issued'
+            transaction_id=None
+            return redirect(url_for('borrow_landing',message=message,transaction_id=transaction_id))
         
         trans = Transaction()
         trans.user_id = user.id
@@ -80,11 +87,20 @@ def book_qrscan_borrow():
         db.session.add(trans)
         db.session.commit()
 
-        return "Issued",trans.id
+        message="Issued"
+        transaction_id=trans.id
+        return redirect(url_for('borrow_landing',message=message,transaction_id=transaction_id))
     
-    return render_template('book_qr_borrow.html',form=form,userid=user_id)
+    return render_template('book_qr_borrow.html',form=form,userid=user_id,message=message,transaction_id=transaction_id)
+
+@app.route('/borrow_landing',methods=["POST","GET"])
+def borrow_landing():
+    message = request.args.get('message')
+    transaction_id = request.args.get('transaction_id')
+    return render_template('borrow_landing.html',message=message,transaction_id=transaction_id)
 
 
+# <----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
 
 
 @app.route('/user_qrscan_return', methods=["POST","GET"])
@@ -104,10 +120,11 @@ def user_qrscan_return():
 @app.route('/book_qrscan_return', methods=["POST","GET"])
 def book_qrscan_return():
     form=BookQrScan()
-
+    message=''
     user_id = request.args.get('userid')
     if user_id is None:
-        return "No User ID Present"
+        message="No User ID Present"
+        return redirect(url_for("return_landing",message=message))  
     
     if form.validate_on_submit():
         book_qr = form.data.get("qr")
@@ -121,10 +138,12 @@ def book_qrscan_return():
         ).first()
 
         if user is None or book is None:
-            return "Error"
+            message = "Error User or Book not found"
+            return redirect(url_for("return_landing",message=message))  
         
         if not book.issue:
-            return "Book Already Returned"
+            message="Book Already Returned"
+            return redirect(url_for("return_landing",message=message))  
         
         trans=Transaction.query.filter_by(user_id=user.id,book_id=book.id,return_date=None).first()
         if trans:
@@ -133,12 +152,19 @@ def book_qrscan_return():
             book.issue=False
             db.session.add(trans)
             db.session.commit()
-            return "Returned"
+            message= "Returned"
+            return redirect(url_for("return_landing",message=message))  
         
         else:
-            return "No Transaction Found"
+            message= "No Transaction Found"
+            return redirect(url_for("return_landing",message=message))  
     
     return render_template('book_qr_return.html',form=form,userid=user_id)
+
+@app.route("/return_landing",methods=["GET","POST"])
+def return_landing():
+    message=request.args.get('message')
+    return render_template('return_landing.html',message=message)
 
 # <-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
 

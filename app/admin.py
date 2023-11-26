@@ -65,8 +65,21 @@ class BookView(ModelView):
     
     column_list=['id','title','author','qr','issue']
 
+class AvailBooks(ModelView):
+    can_export = True
+    can_edit = False
+    can_create = False
+    can_delete = False
+    def is_accessible(self):
+        return current_user.is_authenticated
 
-# class UserView(ModelView):
+    def _handle_view(self, name, **kwargs):
+        if not self.is_accessible():
+            return redirect(url_for('login', next=request.url))
+    def get_query(self):
+        return self.session.query(self.model).filter(
+          Books.issue==False)
+     
 
 class LateView(ModelView):
     can_export = True
@@ -100,12 +113,12 @@ class LateView(ModelView):
         ).filter(
             Transaction.returned==False)
 
-    
-     
+
 
 
 admin.add_view(UserView(User, db.session))
 admin.add_view(BookView(Books, db.session))
+admin.add_view(AvailBooks(Books,db.session,endpoint='Available Books',name='Available Books'))
 admin.add_view(TransactionView(Transaction, db.session))
 admin.add_view(LateView(Transaction, db.session,endpoint='late',name='Late'))
 

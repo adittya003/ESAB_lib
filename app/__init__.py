@@ -17,7 +17,7 @@ bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)
 
-admin=Admin(app,name='library_management')
+admin=Admin(app,name='Library_Management',template_mode='bootstrap3')
 
 from . import routes
 

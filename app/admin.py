@@ -6,7 +6,8 @@ from flask import redirect,url_for,request
 from flask_login import current_user
 from flask_admin import AdminIndexView
 from flask_admin.menu import MenuLink
-from sqlalchemy.sql import func
+from sqlalchemy import func, join, Integer, String, Boolean, Date
+from sqlalchemy.orm import aliased
 from datetime import datetime
 from .late import *
 
@@ -43,7 +44,7 @@ class TransactionView(ModelView):
 
 class UserView(ModelView):
     can_export = True
-    # can_edit =False
+
     def is_accessible(self):
         return current_user.is_authenticated
 
@@ -51,7 +52,9 @@ class UserView(ModelView):
         if not self.is_accessible():
             return redirect(url_for('login', next=request.url))
     
-    column_list=['id','first_name','last_name','qr','phone_number','active']
+    column_list = ['id', 'first_name', 'last_name', 'qr', 'phone_number', 'active']
+    column_searchable_list = ['id', 'first_name', 'last_name']
+
 
 class BookView(ModelView):
     can_export = True
@@ -64,6 +67,7 @@ class BookView(ModelView):
             return redirect(url_for('login', next=request.url))
     
     column_list=['id','title','author','qr','issue']
+    column_searchable_list = ['id', 'title', 'author']
 
 class AvailBooks(ModelView):
     can_export = True
@@ -79,6 +83,8 @@ class AvailBooks(ModelView):
     def get_query(self):
         return self.session.query(self.model).filter(
           Books.issue==False)
+    column_list=['id','title','author','qr','issue']
+    column_searchable_list = ['id', 'title', 'author']
      
 
 class LateView(ModelView):
@@ -87,7 +93,6 @@ class LateView(ModelView):
     can_create = False
     can_delete = False
     column_list=['id','user_id','book_id','issue_date','due_date','return_date','returned']
-
     def is_accessible(self):
         return current_user.is_authenticated
 
@@ -96,13 +101,16 @@ class LateView(ModelView):
             return redirect(url_for('login', next=request.url))
         
     def get_query(self):
-      return self.session.query(self.model).filter(
+        
+
+        query= self.session.query(self.model).filter(
           Transaction.due_date<=datetime.today()
         ).filter(
             Transaction.return_date==None
         ).filter(
             Transaction.returned==False
         )
+        return query
     
 
     def get_count_query(self):
@@ -112,6 +120,7 @@ class LateView(ModelView):
             Transaction.return_date==None
         ).filter(
             Transaction.returned==False)
+    
 
 
 
